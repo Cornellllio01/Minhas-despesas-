@@ -125,7 +125,6 @@
             overflow-y: auto;
         }
 
-        /* NOVA SEÇÃO DE FILTROS POR CATEGORIA */
         .category-filters {
             grid-column: 1 / -1;
             background: #fff;
@@ -142,11 +141,11 @@
         }
 
         .filter-buttons {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(140px, 1fr));
-    gap: 12px;
-    justify-items: center;
-}
+            display: grid;
+            grid-template-columns: repeat(2, minmax(140px, 1fr));
+            gap: 12px;
+            justify-items: center;
+        }
 
         .filter-btn {
             background: #f8f9ff;
@@ -184,7 +183,6 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
-        /* ESTATÍSTICAS POR CATEGORIA */
         .category-stats {
             grid-column: 1 / -1;
             background: #fff;
@@ -354,29 +352,6 @@
             box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
         }
 
-        .commands-help {
-            grid-column: 1 / -1;
-            background: #fff9e6;
-            border: 1px solid #ffd700;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        .commands-help h3 {
-            color: #b8860b;
-            margin-bottom: 15px;
-        }
-
-        .command-example {
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 5px 0;
-            font-family: monospace;
-            border-left: 4px solid #ffd700;
-        }
-
         @media (max-width: 768px) {
             .content {
                 grid-template-columns: 1fr;
@@ -409,7 +384,7 @@
         </div>
 
         <div class="content">
-            <!-- NOVA SEÇÃO: Filtros por Categoria -->
+            <!-- Filtros por Categoria -->
             <div class="category-filters">
                 <h3>📊 Filtrar por Categoria</h3>
                 <div class="filter-buttons" id="categoryFilters">
@@ -439,7 +414,7 @@
                 <div class="total-value" id="totalValue">R$ 0,00</div>
             </div>
 
-            <!-- NOVA SEÇÃO: Estatísticas por Categoria -->
+            <!-- Estatísticas por Categoria -->
             <div class="category-stats">
                 <h3>📈 Estatísticas por Categoria</h3>
                 <div class="stats-grid" id="categoryStatsGrid">
@@ -477,21 +452,6 @@
                         <button class="add-btn" onclick="addExpenseManually()">Adicionar Despesa</button>
                     </div>
                 </div>
-            </div>
-
-            <!-- Ajuda com Comandos -->
-            <div class="commands-help">
-                <h3>📝 Exemplos de Comandos de Voz:</h3>
-                <div class="command-example">"Gastei 15 reais com café"</div>
-                <div class="command-example">"Paguei 50 reais de uber"</div>
-                <div class="command-example">"Despesa de 120 supermercado"</div>
-                <div class="command-example">"30 reais remédio"</div>
-                <div class="command-example">"Cinema custou 25 reais"</div>
-                <div class="command-example">"Comprei pizza por 40 reais"</div>
-                <div class="command-example">"15,50 almoço"</div>
-                <div class="command-example">"Gasto 80 gasolina"</div>
-                <div class="command-example">"Vinte reais de lanche"</div>
-                <div class="command-example">"Cinquenta reais de transporte"</div>
             </div>
         </div>
     </div>
@@ -875,24 +835,21 @@
         });
     </script>
     <script>
-  window.onload = function () {
-    const inputs = document.querySelectorAll('input');
+        window.onload = function () {
+            const inputs = document.querySelectorAll('input');
 
-    inputs.forEach(input => {
-      const key = input.id || input.name;
-      if (!key) return;
+            inputs.forEach(input => {
+                const key = input.id || input.name;
+                if (!key) return;
 
-      const salvo = localStorage.getItem(key);
-      if (salvo !== null) input.value = salvo;
+                const salvo = localStorage.getItem(key);
+                if (salvo !== null) input.value = salvo;
 
-      input.addEventListener('input', () => {
-        localStorage.setItem(key, input.value);
-      });
-    });
-  };
-</script>
+                input.addEventListener('input', () => {
+                    localStorage.setItem(key, input.value);
+                });
+            });
+        };
+    </script>
 </body>
 </html>
-
-
-
