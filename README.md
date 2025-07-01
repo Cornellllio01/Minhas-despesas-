@@ -1,1 +1,881 @@
-# Minhas-despesas-
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistente de Despesas por Voz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .voice-section {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid #e1e8ff;
+        }
+
+        .voice-button {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            border: none;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+
+        .voice-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+        }
+
+        .voice-button.listening {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+
+        .status.listening {
+            background: #e8f5e8;
+            color: #2d5f2d;
+            border: 1px solid #b8e6b8;
+        }
+
+        .status.processing {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .expenses-section {
+            background: #fff;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #f0f0f0;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        /* NOVA SEÇÃO DE FILTROS POR CATEGORIA */
+        .category-filters {
+            grid-column: 1 / -1;
+            background: #fff;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #f0f0f0;
+            margin-bottom: 20px;
+        }
+
+        .category-filters h3 {
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .filter-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+    gap: 12px;
+    justify-items: center;
+}
+
+        .filter-btn {
+            background: #f8f9ff;
+            border: 2px solid #e1e8ff;
+            padding: 10px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-btn.active {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border-color: #4facfe;
+        }
+
+        .filter-btn .count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .filter-btn.active .count {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* ESTATÍSTICAS POR CATEGORIA */
+        .category-stats {
+            grid-column: 1 / -1;
+            background: #fff;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #f0f0f0;
+            margin-top: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .expense-item {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .expense-details {
+            flex: 1;
+        }
+
+        .expense-category {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .expense-description {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .expense-value {
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+
+        .delete-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .total-section {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .total-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .form-section {
+            grid-column: 1 / -1;
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ff;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .commands-help {
+            grid-column: 1 / -1;
+            background: #fff9e6;
+            border: 1px solid #ffd700;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .commands-help h3 {
+            color: #b8860b;
+            margin-bottom: 15px;
+        }
+
+        .command-example {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+            font-family: monospace;
+            border-left: 4px solid #ffd700;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .filter-buttons {
+                justify-content: flex-start;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 Assistente de Despesas</h1>
+            <p>Controle suas despesas usando comandos de voz</p>
+        </div>
+
+        <div class="content">
+            <!-- NOVA SEÇÃO: Filtros por Categoria -->
+            <div class="category-filters">
+                <h3>📊 Filtrar por Categoria</h3>
+                <div class="filter-buttons" id="categoryFilters">
+                    <!-- Botões de filtro serão inseridos aqui via JavaScript -->
+                </div>
+            </div>
+
+            <!-- Seção de Comando de Voz -->
+            <div class="voice-section">
+                <h2>Comando de Voz</h2>
+                <button class="voice-button" id="voiceBtn">🎤</button>
+                <div class="status ready" id="status">Clique no microfone e fale sua despesa</div>
+                <div id="transcript" style="margin-top: 15px; font-style: italic; color: #666;"></div>
+            </div>
+
+            <!-- Lista de Despesas -->
+            <div class="expenses-section">
+                <h2>Despesas <span id="filterTitle">Recentes</span></h2>
+                <div id="expensesList">
+                    <!-- Despesas serão adicionadas aqui -->
+                </div>
+            </div>
+
+            <!-- Total -->
+            <div class="total-section">
+                <h2>Total de Despesas <span id="totalTitle"></span></h2>
+                <div class="total-value" id="totalValue">R$ 0,00</div>
+            </div>
+
+            <!-- NOVA SEÇÃO: Estatísticas por Categoria -->
+            <div class="category-stats">
+                <h3>📈 Estatísticas por Categoria</h3>
+                <div class="stats-grid" id="categoryStatsGrid">
+                    <!-- Estatísticas serão inseridas aqui via JavaScript -->
+                </div>
+            </div>
+
+            <!-- Formulário Manual -->
+            <div class="form-section">
+                <h2>Adicionar Despesa Manualmente</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="description">Descrição:</label>
+                        <input type="text" id="description" placeholder="Ex: Café da manhã">
+                    </div>
+                    <div class="form-group">
+                        <label for="value">Valor:</label>
+                        <input type="number" id="value" step="0.01" placeholder="0,00">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="category">Categoria:</label>
+                        <select id="category">
+                            <option value="alimentacao">Alimentação</option>
+                            <option value="transporte">Transporte</option>
+                            <option value="saude">Saúde</option>
+                            <option value="lazer">Lazer</option>
+                            <option value="casa">Casa</option>
+                            <option value="trabalho">Trabalho</option>
+                            <option value="outros">Outros</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button class="add-btn" onclick="addExpenseManually()">Adicionar Despesa</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ajuda com Comandos -->
+            <div class="commands-help">
+                <h3>📝 Exemplos de Comandos de Voz:</h3>
+                <div class="command-example">"Gastei 15 reais com café"</div>
+                <div class="command-example">"Paguei 50 reais de uber"</div>
+                <div class="command-example">"Despesa de 120 supermercado"</div>
+                <div class="command-example">"30 reais remédio"</div>
+                <div class="command-example">"Cinema custou 25 reais"</div>
+                <div class="command-example">"Comprei pizza por 40 reais"</div>
+                <div class="command-example">"15,50 almoço"</div>
+                <div class="command-example">"Gasto 80 gasolina"</div>
+                <div class="command-example">"Vinte reais de lanche"</div>
+                <div class="command-example">"Cinquenta reais de transporte"</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let expenses = [];
+        let recognition;
+        let isListening = false;
+        let currentFilter = 'all';
+
+        const categories = {
+            'alimentacao': { name: '🍽️ Alimentação', color: '#ff6b6b' },
+            'transporte': { name: '🚗 Transporte', color: '#4ecdc4' },
+            'saude': { name: '🏥 Saúde', color: '#45b7d1' },
+            'lazer': { name: '🎭 Lazer', color: '#f093fb' },
+            'casa': { name: '🏠 Casa', color: '#4facfe' },
+            'trabalho': { name: '💼 Trabalho', color: '#667eea' },
+            'outros': { name: '📦 Outros', color: '#96ceb4' }
+        };
+
+        function renderCategoryFilters() {
+            const filtersContainer = document.getElementById('categoryFilters');
+            
+            let filtersHTML = `
+                <button class="filter-btn ${currentFilter === 'all' ? 'active' : ''}" onclick="setFilter('all')">
+                    📊 Todas <span class="count">${expenses.length}</span>
+                </button>
+            `;
+
+            Object.entries(categories).forEach(([key, category]) => {
+                const count = expenses.filter(expense => expense.category === key).length;
+                filtersHTML += `
+                    <button class="filter-btn ${currentFilter === key ? 'active' : ''}" onclick="setFilter('${key}')">
+                        ${category.name} <span class="count">${count}</span>
+                    </button>
+                `;
+            });
+
+            filtersContainer.innerHTML = filtersHTML;
+        }
+
+        function setFilter(category) {
+            currentFilter = category;
+            renderCategoryFilters();
+            renderExpenses();
+            updateTotal();
+            updateCategoryStats();
+        }
+
+        function getFilteredExpenses() {
+            if (currentFilter === 'all') {
+                return expenses;
+            }
+            return expenses.filter(expense => expense.category === currentFilter);
+        }
+
+        function renderCategoryStats() {
+            const statsContainer = document.getElementById('categoryStatsGrid');
+            
+            const stats = Object.entries(categories).map(([key, category]) => {
+                const categoryExpenses = expenses.filter(expense => expense.category === key);
+                const total = categoryExpenses.reduce((sum, expense) => sum + expense.value, 0);
+                const count = categoryExpenses.length;
+                
+                return {
+                    key,
+                    category,
+                    total,
+                    count,
+                    percentage: expenses.length > 0 ? ((total / expenses.reduce((sum, e) => sum + e.value, 0)) * 100) : 0
+                };
+            }).filter(stat => stat.count > 0); 
+
+            if (stats.length === 0) {
+                statsContainer.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Nenhuma despesa registrada ainda.</p>';
+                return;
+            }
+
+            statsContainer.innerHTML = stats.map(stat => `
+                <div class="stat-card" style="background: linear-gradient(135deg, ${stat.category.color}, ${stat.category.color}aa);">
+                    <div class="stat-icon">${stat.category.name.split(' ')[0]}</div>
+                    <div class="stat-value">R$ ${stat.total.toFixed(2)}</div>
+                    <div class="stat-label">${stat.category.name.split(' ').slice(1).join(' ')}</div>
+                    <div class="stat-label">${stat.count} despesa${stat.count !== 1 ? 's' : ''} • ${stat.percentage.toFixed(1)}%</div>
+                </div>
+            `).join('');
+        }
+
+        function renderExpenses() {
+            const expensesList = document.getElementById('expensesList');
+            const filteredExpenses = getFilteredExpenses();
+            
+            const filterTitle = document.getElementById('filterTitle');
+            if (currentFilter === 'all') {
+                filterTitle.textContent = 'Recentes';
+            } else {
+                filterTitle.textContent = `- ${categories[currentFilter].name}`;
+            }
+            
+            if (filteredExpenses.length === 0) {
+                const message = currentFilter === 'all' 
+                    ? 'Nenhuma despesa registrada ainda.' 
+                    : `Nenhuma despesa na categoria ${categories[currentFilter].name}.`;
+                expensesList.innerHTML = `<p style="text-align: center; color: #666; padding: 20px;">${message}</p>`;
+                return;
+            }
+
+            expensesList.innerHTML = filteredExpenses.map(expense => `
+                <div class="expense-item">
+                    <div class="expense-details">
+                        <div class="expense-category">${getCategoryName(expense.category)} • ${expense.date}</div>
+                        <div class="expense-description">${expense.description}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="expense-value">R$ ${expense.value.toFixed(2)}</div>
+                        <button class="delete-btn" onclick="deleteExpense(${expense.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateTotal() {
+            const filteredExpenses = getFilteredExpenses();
+            const total = filteredExpenses.reduce((sum, expense) => sum + expense.value, 0);
+            document.getElementById('totalValue').textContent = `R$ ${total.toFixed(2)}`;
+            
+            const totalTitle = document.getElementById('totalTitle');
+            if (currentFilter === 'all') {
+                totalTitle.textContent = '';
+            } else {
+                totalTitle.textContent = `- ${categories[currentFilter].name}`;
+            }
+        }
+
+        function updateCategoryStats() {
+            renderCategoryStats();
+        }
+
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'pt-BR';
+                recognition.continuous = false;
+                recognition.interimResults = true;
+                recognition.maxAlternatives = 1;
+
+                recognition.onstart = function() {
+                    isListening = true;
+                    document.getElementById('voiceBtn').classList.add('listening');
+                    document.getElementById('status').textContent = '🎤 Ouvindo... Fale sua despesa';
+                    document.getElementById('status').className = 'status listening';
+                };
+
+                recognition.onresult = function(event) {
+                    const result = event.results[event.results.length - 1];
+                    const transcript = result[0].transcript;
+                    
+                    document.getElementById('transcript').textContent = transcript;
+                    
+                    if (result.isFinal) {
+                        processVoiceCommand(transcript);
+                    }
+                };
+
+                recognition.onend = function() {
+                    isListening = false;
+                    document.getElementById('voiceBtn').classList.remove('listening');
+                    document.getElementById('status').textContent = 'Clique no microfone e fale sua despesa';
+                    document.getElementById('status').className = 'status ready';
+                    
+                    setTimeout(() => {
+                        isListening = false;
+                    }, 100);
+                };
+
+                recognition.onerror = function(event) {
+                    console.error('Erro no reconhecimento de voz:', event.error);
+                    isListening = false;
+                    document.getElementById('voiceBtn').classList.remove('listening');
+                    
+                    let errorMessage = '';
+                    let statusClass = 'status ready';
+                    
+                    switch(event.error) {
+                        case 'not-allowed':
+                            errorMessage = '🚫 Permissão negada! Permita o acesso ao microfone e recarregue a página';
+                            statusClass = 'status error';
+                            showPermissionHelp();
+                            break;
+                        case 'no-speech':
+                            errorMessage = '🔇 Nenhuma fala detectada. Tente novamente';
+                            break;
+                        case 'audio-capture':
+                            errorMessage = '🎤 Erro no microfone. Verifique se está funcionando';
+                            break;
+                        case 'network':
+                            errorMessage = '🌐 Erro de rede. Verifique sua conexão';
+                            break;
+                        default:
+                            errorMessage = 'Erro no reconhecimento. Tente novamente';
+                    }
+                    
+                    document.getElementById('status').textContent = errorMessage;
+                    document.getElementById('status').className = statusClass;
+                    
+                    setTimeout(() => {
+                        isListening = false;
+                        if (event.error !== 'not-allowed') {
+                            document.getElementById('status').textContent = 'Clique no microfone e fale sua despesa';
+                            document.getElementById('status').className = 'status ready';
+                        }
+                    }, 3000);
+                };
+            } else {
+                document.getElementById('status').textContent = 'Reconhecimento de voz não suportado no seu navegador';
+                document.getElementById('voiceBtn').disabled = true;
+            }
+        }
+
+        function parseVoiceCommand(text) {
+            console.log('Processando comando:', text);
+            
+            const valueMatch = text.match(/(\d+[\.,]?\d*)|(um|dois|três|tres|quatro|cinco|seis|sete|oito|nove|dez|onze|doze|treze|quatorze|quinze|dezesseis|dezessete|dezoito|dezenove|vinte|trinta|quarenta|cinquenta|sessenta|setenta|oitenta|noventa|cem|duzentos|trezentos|quatrocentos|quinhentos|seiscentos|setecentos|oitocentos|novecentos|mil)/gi);
+            
+            let value = 0;
+            if (valueMatch) {
+                const numberMap = {
+                    'um': 1, 'dois': 2, 'três': 3, 'tres': 3, 'quatro': 4, 'cinco': 5,
+                    'seis': 6, 'sete': 7, 'oito': 8, 'nove': 9, 'dez': 10,
+                    'onze': 11, 'doze': 12, 'treze': 13, 'quatorze': 14, 'quinze': 15,
+                    'dezesseis': 16, 'dezessete': 17, 'dezoito': 18, 'dezenove': 19,
+                    'vinte': 20, 'trinta': 30, 'quarenta': 40, 'cinquenta': 50,
+                    'sessenta': 60, 'setenta': 70, 'oitenta': 80, 'noventa': 90,
+                    'cem': 100, 'duzentos': 200, 'trezentos': 300, 'quatrocentos': 400,
+                    'quinhentos': 500, 'seiscentos': 600, 'setecentos': 700,
+                    'oitocentos': 800, 'novecentos': 900, 'mil': 1000
+                };
+
+                for (const item of valueMatch) {
+                    if (item.includes(',') || item.includes('.')) {
+                        value += parseFloat(item.replace(',', '.'));
+                    } else if (!isNaN(item)) {
+                        value += parseInt(item);
+                    } else if (numberMap[item.toLowerCase()]) {
+                        value += numberMap[item.toLowerCase()];
+                    }
+                }
+            }
+
+            if (value <= 0) return null;
+
+            const description = text
+                .replace(/(\d+[\.,]?\d*)|(r\$|\$|reais?|com|de|gastei|paguei|despesa)/gi, '')
+                .replace(/\s{2,}/g, ' ')
+                .replace(/\s*r\$\s*/gi, '')
+                .trim();
+
+            const category = determineCategory(description);
+            
+            return {
+                value: value,
+                description: description || 'Despesa por voz',
+                category: category
+            };
+        }
+
+        function determineCategory(description) {
+            const categoryKeywords = {
+                'alimentacao': ['almoço', 'almoco', 'jantar', 'café', 'cafe', 'comida', 'restaurante', 'lanche', 'supermercado', 'padaria', 'pizza', 'hambúrguer', 'hamburguer', 'bebida', 'água', 'agua', 'refrigerante', 'suco', 'cerveja', 'bar', 'açougue', 'acougue', 'feira', 'mercado', 'food', 'delivery'],
+                'transporte': ['uber', 'táxi', 'taxi', 'ônibus', 'onibus', 'metrô', 'metro', 'gasolina', 'combustível', 'combustivel', 'estacionamento', 'pedágio', 'pedagio', 'carro', 'moto', 'passagem', 'passagens', 'viagem', 'voo', 'voos', 'trem', 'bicicleta', 'patinete'],
+                'saude': ['remédio', 'remedio', 'farmácia', 'farmacia', 'médico', 'medico', 'consulta', 'hospital', 'exame', 'plano de saúde', 'plano de saude', 'dentista', 'terapia', 'vacina', 'vacinas', 'clínica', 'clinica', 'saúde', 'saude'],
+                'lazer': ['cinema', 'filme', 'show', 'teatro', 'concerto', 'parque', 'viagem', 'hotel', 'passeio', 'festa', 'balada', 'bar', 'restaurante', 'clube', 'academia', 'esporte', 'jogos', 'livro', 'livros', 'revista', 'revistas', 'hobby', 'hobbies', 'presente', 'presentes', 'brinquedo', 'brinquedos', 'diversão', 'diversao'],
+                'casa': ['aluguel', 'condomínio', 'condominio', 'luz', 'água', 'agua', 'gás', 'gas', 'internet', 'telefone', 'manutenção', 'reparo', 'limpeza', 'material de limpeza', 'móveis', 'moveis', 'eletrodoméstico', 'eletrodomestico', 'decoração', 'decoracao', 'jardim', 'jardinagem', 'reforma', 'construção', 'construcao', 'imposto', 'impostos', 'iptu', 'seguro', 'seguros', 'taxa', 'taxas', 'conta', 'contas', 'moradia'],
+                'trabalho': ['escritório', 'escritorio', 'material de escritório', 'material de escritorio', 'curso', 'cursos', 'treinamento', 'workshop', 'conferência', 'conferencia', 'passagem', 'passagens', 'hotel', 'refeição', 'refeicao', 'transporte', 'uniforme', 'ferramenta', 'ferramentas', 'equipamento', 'equipamentos', 'software', 'licença', 'licenca', 'salário', 'salario', 'freelance', 'autônomo', 'autonomo', 'negócio', 'negocio', 'empresa', 'reunião', 'reuniao'],
+                'outros': ['doação', 'doacao', 'multa', 'multas', 'imposto', 'impostos', 'taxa', 'taxas', 'juros', 'empréstimo', 'emprestimo', 'investimento', 'investimentos', 'educação', 'educacao', 'escola', 'faculdade', 'curso', 'cursos', 'livro', 'livros', 'material escolar', 'material de estudo', 'roupa', 'roupas', 'calçado', 'calcado', 'acessório', 'acessorio', 'presente', 'presentes', 'caridade', 'dívida', 'divida', 'cartão de crédito', 'cartao de credito', 'banco', 'bancos', 'saque', 'saques', 'transferência', 'transferencia', 'depósito', 'deposito', 'seguro', 'seguros', 'serviço', 'servico', 'serviços', 'servicos', 'outros']
+            };
+
+            const lowerDescription = description.toLowerCase();
+
+            for (const category in categoryKeywords) {
+                for (const keyword of categoryKeywords[category]) {
+                    if (lowerDescription.includes(keyword)) {
+                        return category;
+                    }
+                }
+            }
+            return 'outros';
+        }
+
+        function getCategoryName(key) {
+            return categories[key] ? categories[key].name : 'Outros';
+        }
+
+        function processVoiceCommand(transcript) {
+            document.getElementById('status').textContent = 'Processando...';
+            document.getElementById('status').className = 'status processing';
+
+            const expenseData = parseVoiceCommand(transcript);
+
+            if (expenseData) {
+                addExpense(expenseData.description, expenseData.value, expenseData.category);
+                document.getElementById('status').textContent = 'Despesa adicionada com sucesso!';
+                document.getElementById('status').className = 'status ready';
+            } else {
+                document.getElementById('status').textContent = 'Não entendi a despesa. Tente novamente.';
+                document.getElementById('status').className = 'status error';
+            }
+            document.getElementById('transcript').textContent = '';
+        }
+
+        function addExpense(description, value, category) {
+            const newExpense = {
+                id: expenses.length > 0 ? Math.max(...expenses.map(e => e.id)) + 1 : 1,
+                description: description,
+                value: parseFloat(value),
+                category: category,
+                date: new Date().toLocaleDateString('pt-BR')
+            };
+            expenses.push(newExpense);
+            saveExpenses();
+            renderExpenses();
+            updateTotal();
+            renderCategoryFilters();
+            updateCategoryStats();
+        }
+
+        function deleteExpense(id) {
+            expenses = expenses.filter(expense => expense.id !== id);
+            saveExpenses();
+            renderExpenses();
+            updateTotal();
+            renderCategoryFilters();
+            updateCategoryStats();
+        }
+
+        function addExpenseManually() {
+            const description = document.getElementById('description').value;
+            const value = parseFloat(document.getElementById('value').value);
+            const category = document.getElementById('category').value;
+
+            if (description && !isNaN(value) && value > 0) {
+                addExpense(description, value, category);
+                document.getElementById('description').value = '';
+                document.getElementById('value').value = '';
+                document.getElementById('category').value = 'alimentacao';
+            } else {
+                alert('Por favor, preencha a descrição e um valor válido para a despesa.');
+            }
+        }
+
+        function saveExpenses() {
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+        }
+
+        function loadExpenses() {
+            const storedExpenses = localStorage.getItem('expenses');
+            if (storedExpenses) {
+                expenses = JSON.parse(storedExpenses);
+            }
+        }
+
+        function showPermissionHelp() {
+            alert('Para usar o reconhecimento de voz, você precisa permitir o acesso ao microfone. Por favor, recarregue a página e conceda a permissão quando solicitado.');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadExpenses();
+            renderCategoryFilters();
+            renderExpenses();
+            updateTotal();
+            updateCategoryStats();
+            initSpeechRecognition();
+
+            document.getElementById('voiceBtn').addEventListener('click', () => {
+                if (isListening) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
